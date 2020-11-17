@@ -1,0 +1,5 @@
+coin: 5 #每天需要投币的数量。[0,5]。
+gift: true #送出即将过期礼物。[true,false]
+s2c: true #银瓜子兑换为硬币。[true,false]
+autoBiCoin: 1 #月底自动使用B币卷。[{0,自己会使用},{1,给自己充电},{2,兑换成金瓜子}]
+platform: android #用户设备的标识[android,ios]
