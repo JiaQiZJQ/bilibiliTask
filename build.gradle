@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id "io.freefair.lombok" version '5.3.0'
+}
+
+group = 'top.srcrs'
+version = '1.0.8'
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    maven {
+        url 'https://maven.aliyun.com/repository/public/'
+    }
+    mavenLocal()
+    mavenCentral()
+}
+
+List alibaba = [
+        'com.alibaba:fastjson:latest.release'
+]
+List apache = [
+        'org.apache.httpcomponents:httpclient:latest.release'
+]
+List logback = [
+        'ch.qos.logback:logback-classic:latest.release'
+]
+List junit = [
+        'org.junit.jupiter:junit-jupiter-engine:latest.release'
+]
+List yaml = [
+        'org.yaml:snakeyaml:latest.release'
+]
+dependencies {
+    implementation logback,alibaba,apache,yaml
+    testImplementation junit
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task runMain (type: JavaExec) {
+    main = 'top.srcrs.BiliStart'
+    classpath = sourceSets.main.runtimeClasspath
+}
