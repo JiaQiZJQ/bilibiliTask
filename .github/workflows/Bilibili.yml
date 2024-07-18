@@ -1,0 +1,45 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+# 每天10:30执行
+
+name: Bilibili
+
+on:
+   push:
+     branches: main
+   gollum:
+   workflow_dispatch:
+   schedule:
+       - cron: '30 2 * * *'
+
+jobs:
+  start:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Cache Gradle packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+    - name: Build with Gradle
+      env:
+        BILI_JCT: ${{ secrets.BILI_JCT }}
+        DEDEUSERID: ${{ secrets.DEDEUSERID }}
+        SESSDATA: ${{ secrets.SESSDATA }}
+        SCKEY: ${{ secrets.SCKEY }}
+        DINGTALK: ${{secrets.DINGTALK}}
+        PUSHPLUSTK: ${{secrets.PUSHPLUSTK}}
+        SENDKEY: ${{ secrets.SENDKEY }}
+        TELEGRAM_BOT_TOKEN: ${{secrets.TELEGRAM_BOT_TOKEN}}
+        TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
+      run:
+        sh gradlew runMain
