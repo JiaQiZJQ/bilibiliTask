@@ -1,20 +1,19 @@
 package top.srcrs.task.live;
 
 import com.alibaba.fastjson.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import top.srcrs.Task;
 import top.srcrs.util.Request;
 
+import java.util.Random;
 
 /**
  * 进行直播签到
  * @author srcrs
  * @Time 2020-10-13
  */
+@Slf4j
 public class BiLiveTask implements Task {
-    /** 获取日志记录器对象 */
-    private static final Logger LOGGER = LoggerFactory.getLogger(BiLiveTask.class);
     /** 访问成功 */
     private static final String SUCCESS = "0";
 
@@ -23,17 +22,21 @@ public class BiLiveTask implements Task {
         try{
             JSONObject json = xliveSign();
             String msg ;
+            String key = "code";
             /* 获取json对象的状态码code */
-            if(SUCCESS.equals(json.getString("code"))){
-                msg = "获得"+json.getJSONObject("data").getString("text");
+            if(SUCCESS.equals(json.getString(key))){
+                msg = "获得" + json.getJSONObject("data").getString("text") + " ,"
+                        + json.getJSONObject("data").getString("specialText") + "✔";
             } else{
-                msg = json.getString("message");
+                msg = json.getString("message") + "❌";
             }
-            LOGGER.info("直播签到 -- {}",msg);
-            /* 直播签到后等待5秒 */
-            Thread.sleep(5000);
+            log.info("【直播签到】: {}",msg);
+            /* 直播签到后等待 3-5 秒
+            ** 为防止礼物未到到账，而无法送出
+            */
+            Thread.sleep(new Random().nextInt(2000)+3000);
         } catch (Exception e){
-            LOGGER.error("直播签到等待中错误 -- "+e);
+            log.error("💔直播签到错误 : ", e);
         }
     }
 

@@ -532,6 +532,15 @@
         },
         "comment": "用户追番列表"
       },
+      "videos": {
+        "url": "http://api.bilibili.com/x/space/coin/video",
+        "method": "GET",
+        "verify": false,
+        "params": {
+          "vmid": "uid"
+        },
+        "comment": "30天内投过硬币的视频"
+      },
       "followings": {
         "url": "https://api.bilibili.com/x/relation/followings",
         "method": "GET",

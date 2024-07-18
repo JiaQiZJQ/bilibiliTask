@@ -1,77 +1,61 @@
 package top.srcrs.util;
 
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
 
 /**
- * 将日志消息发送到用户的server酱
+ * 将日志消息发送到用户的 server 酱 （微信）
+ *
  * @author srcrs
  * @Time 2020-10-22
  */
+@Slf4j
 public class SendServer {
-    /** 获取日志记录器对象 */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SendServer.class);
+
+    private SendServer(){}
 
     /**
      * 发送消息给用户，如果绑定了微信，会发送到微信上。
+     * sc.ftqq.com
+     *
      * @param sckey 需要从server酱的官网注册获取
      * @author srcrs
      * @Time 2020-10-22
      */
-    public static void send(String sckey){
+    public static void send(String sckey) {
         /* 将要推送的数据 */
-        String desp = readLog("logs/logback.log");
-        String body = "text="+"BilibiliTask运行结果"+"&desp="+desp;
-        StringEntity entityBody = new StringEntity(body,"UTF-8");
-        HttpClient client = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("https://sc.ftqq.com/"+sckey+".send");
-        httpPost.addHeader("Content-Type","application/x-www-form-urlencoded");
-        httpPost.setEntity(entityBody);
-        HttpResponse resp ;
-        try{
-            resp = client.execute(httpPost);
-            if(resp.getStatusLine().getStatusCode()==200){
-                LOGGER.info("server酱推送正常");
-            } else{
-                LOGGER.info("server酱推送失败");
+        JSONObject pJson = new JSONObject();
+        pJson.put("text", "BilibiliTask运行结果");
+        pJson.put("desp", ReadLog.getMarkDownString("logs/logback.log"));
+
+        HttpUriRequest httpPost = RequestBuilder.post()
+                                                .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                                                .setUri("https://sc.ftqq.com/" + sckey + ".send")
+                                                .addParameters(Request.getPairList(pJson))
+                                                .build();
+
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpResponse resp = client.execute(httpPost);
+            HttpEntity entity = resp.getEntity();
+            String respContent = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+            if (resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                log.info("【server酱推送】: 正常✔");
+            } else {
+                log.info("【server酱推送】: 失败, 原因为: {}❌", respContent);
             }
-        } catch (Exception e){
-            LOGGER.error("server酱发送错误 -- "+e);
+        } catch (Exception e) {
+            log.error("💔server酱发送错误 : ", e);
         }
     }
 
-    /**
-     * 读取输出到文件中的日志
-     * @param pathName 日志文件的名字，包括路径
-     * @return String 将日志拼接成了字符串
-     * @author srcrs
-     * @Time 2020-10-22
-     */
-    public static String readLog(String pathName){
-        /* str代表要发送的数据 */
-        StringBuilder str = new StringBuilder();
-        FileReader reader ;
-        BufferedReader br ;
-        try{
-            reader = new FileReader(pathName);
-            br = new BufferedReader(reader);
-            String line;
-            while ((line = br.readLine()) != null){
-                str.append(line).append("\n\n");
-            }
-            reader.close();
-            br.close();
-        } catch (Exception e){
-            LOGGER.error("读日志文件时出错 -- "+e);
-        }
-        return str.toString();
-    }
 }
